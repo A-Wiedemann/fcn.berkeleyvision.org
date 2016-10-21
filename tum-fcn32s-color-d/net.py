@@ -13,13 +13,14 @@ def max_pool(bottom, ks=2, stride=2):
 
 def fcn(split, tops):
     n = caffe.NetSpec()
-    n.data, n.label = L.Python(module='nyud_layers',
-            layer='NYUDSegDataLayer', ntop=2,
+    n.color, n.depth, n.label = L.Python(module='nyud_layers',
+            layer='NYUDSegDataLayer', ntop=3,
             param_str=str(dict(nyud_dir='../data/nyud', split=split,
                 tops=tops, seed=1337)))
+    n.data = L.Concat(n.color, n.depth)
 
     # the base net
-    n.conv1_1, n.relu1_1 = conv_relu(n.data, 64, pad=100)
+    n.conv1_1_bgrd, n.relu1_1 = conv_relu(n.data, 64, pad=100)
     n.conv1_2, n.relu1_2 = conv_relu(n.relu1_1, 64)
     n.pool1 = max_pool(n.relu1_2)
 
@@ -61,7 +62,7 @@ def fcn(split, tops):
     return n.to_proto()
 
 def make_net():
-    tops = ['color', 'label']
+    tops = ['color', 'depth', 'label']
     with open('trainval.prototxt', 'w') as f:
         f.write(str(fcn('trainval', tops)))
 

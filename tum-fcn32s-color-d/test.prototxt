@@ -1,19 +1,27 @@
 layer {
-  name: "data"
+  name: "color"
   type: "Python"
-  top: "data"
+  top: "color"
+  top: "depth"
   top: "label"
   python_param {
     module: "nyud_layers"
     layer: "NYUDSegDataLayer"
-    param_str: "{\'tops\': [\'color\', \'label\'], \'seed\': 1337, \'nyud_dir\': \'../data/nyud\', \'split\': \'test\'}"
+    param_str: "{\'tops\': [\'color\', \'depth\', \'label\'], \'seed\': 1337, \'nyud_dir\': \'../data/nyud\', \'split\': \'test\'}"
   }
 }
 layer {
-  name: "conv1_1"
+  name: "data"
+  type: "Concat"
+  bottom: "color"
+  bottom: "depth"
+  top: "data"
+}
+layer {
+  name: "conv1_1_bgrd"
   type: "Convolution"
   bottom: "data"
-  top: "conv1_1"
+  top: "conv1_1_bgrd"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -32,13 +40,13 @@ layer {
 layer {
   name: "relu1_1"
   type: "ReLU"
-  bottom: "conv1_1"
-  top: "conv1_1"
+  bottom: "conv1_1_bgrd"
+  top: "conv1_1_bgrd"
 }
 layer {
   name: "conv1_2"
   type: "Convolution"
-  bottom: "conv1_1"
+  bottom: "conv1_1_bgrd"
   top: "conv1_2"
   param {
     lr_mult: 1
